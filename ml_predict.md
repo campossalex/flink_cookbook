@@ -2,7 +2,7 @@
 
 Limited to the Ververica Platform and OpenAI API  
 
-## Source table example  
+## Source table example:
 Use your own table source or enriched data  
 
 ```
@@ -41,7 +41,7 @@ CREATE TABLE customer_reviews (
 );
 ```
 
-## Sink table example
+## Sink table example
 Use your own target storage (table, topic, object storage, etc) for the output  
 
 ```
@@ -62,7 +62,7 @@ CREATE TABLE enriched_reviews_kafka (
 );
 ```
 
-## Define the Model
+## Define the Model
 Replace the <token> with the proper value. Be cautious with the rate of API calls to avoid high costs.
 
 ```
@@ -78,7 +78,7 @@ WITH (
 );
 ```
 
-## Flink SQL job
+## Flink SQL job
 This job adds column `generated_at`, `synced_at` and `latency_ms` to measure pipeline latency.
 
 ```
