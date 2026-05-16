@@ -1,8 +1,8 @@
 # Flink ML_PREDICT 
 
-Limited to the Ververica Platform and OpenAI API
+Limited to the Ververica Platform and OpenAI API  
 
-## Source table example
+## Source table example  
 Use your own table source or enriched data  
 
 ```
