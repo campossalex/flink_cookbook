@@ -9,10 +9,72 @@ max_replication_slots = 10
 ```
 Restart the PostgreSQL server   
 
+## Create the source table and user
+
+```
+CREATE DATABASE warehouse;
+
+\c warehouse;
+
+CREATE TABLE master_product (
+  product_id        VARCHAR(64)   NOT NULL,
+  category          VARCHAR(128),
+  item              VARCHAR(255),
+  size              VARCHAR(32),
+  cogs              NUMERIC(10, 2),
+  price             NUMERIC(10, 2),
+  inventory_level   INTEGER,
+  contains_fruit    BOOLEAN,
+  contains_veggies  BOOLEAN,
+  contains_nuts     BOOLEAN,
+  contains_caffeine BOOLEAN,
+  PRIMARY KEY (product_id)
+);
+
+CREATE ROLE cdc_user WITH LOGIN REPLICATION PASSWORD 'admin123';
+
+GRANT CONNECT  ON DATABASE warehouse TO cdc_user;
+GRANT USAGE    ON SCHEMA   public    TO cdc_user;
+GRANT SELECT   ON ALL TABLES IN SCHEMA public TO cdc_user;
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO cdc_user;
+
+INSERT INTO master_product
+  (product_id, category, item, size, cogs, price, inventory_level,
+   contains_fruit, contains_veggies, contains_nuts, contains_caffeine)
+VALUES
+  ('CS01', 'Classic Smoothies',      'Sunrise Sunset',     '24 oz.', 1.50, 4.99, 75, true,  false, false, false),
+  ('CS02', 'Classic Smoothies',      'Kiwi Quencher',      '24 oz.', 1.50, 4.99, 75, true,  false, false, false),
+  ('CS03', 'Classic Smoothies',      'Paradise Point',     '24 oz.', 1.50, 4.99, 75, true,  false, false, false),
+  ('CS04', 'Classic Smoothies',      'Sunny Day',          '24 oz.', 1.50, 4.99, 75, true,  false, false, false),
+  ('CS05', 'Classic Smoothies',      'Mango Magic',        '24 oz.', 1.50, 4.99, 75, true,  false, false, false),
+  ('CS06', 'Classic Smoothies',      'Blimey Limey',       '24 oz.', 1.50, 4.99, 75, true,  false, false, false),
+  ('CS07', 'Classic Smoothies',      'Blueberry Bliss',    '24 oz.', 1.50, 4.99, 75, true,  false, false, false),
+  ('CS08', 'Classic Smoothies',      'Rockin'' Raspberry', '24 oz.', 1.50, 4.99, 75, true,  false, false, false),
+  ('CS09', 'Classic Smoothies',      'Strawberry Limeade', '24 oz.', 1.50, 4.99, 75, true,  false, false, false),
+  ('CS10', 'Classic Smoothies',      'Peaches ''n Silk',   '24 oz.', 1.50, 4.99, 75, true,  false, false, false),
+  ('CS11', 'Classic Smoothies',      'Jetty Punch',        '24 oz.', 1.50, 4.99, 75, true,  false, false, false),
+  ('SF01', 'Superfoods Smoothies',   'Island Green',       '24 oz.', 2.10, 5.99, 50, true,  true,  false, false),
+  ('SF02', 'Superfoods Smoothies',   'Totally Green',      '24 oz.', 2.10, 5.99, 50, true,  true,  false, false),
+  ('SF03', 'Superfoods Smoothies',   'Acai Berry Boost',   '24 oz.', 2.10, 5.99, 50, true,  false, false, false),
+  ('SF04', 'Superfoods Smoothies',   'Pomegranate Plunge', '24 oz.', 2.10, 5.99, 50, true,  false, false, false),
+  ('SF05', 'Superfoods Smoothies',   'Caribbean C-Burst',  '24 oz.', 2.10, 5.99, 50, true,  false, false, false),
+  ('SF06', 'Superfoods Smoothies',   'Get Up and Goji',    '24 oz.', 2.10, 5.99, 50, true,  true,  false, false),
+  ('SF07', 'Superfoods Smoothies',   'Detox Island Green', '24 oz.', 2.10, 5.99, 50, true,  true,  false, false),
+  ('SC01', 'Supercharged Smoothies', 'Triple Berry Oat',   '24 oz.', 2.70, 5.99, 35, true,  false, false, false),
+  ('SC02', 'Supercharged Smoothies', 'Peanut Paradise',    '24 oz.', 2.70, 5.99, 35, false, false, false, false),
+  ('SC03', 'Supercharged Smoothies', 'Health Nut',         '24 oz.', 2.70, 5.99, 35, false, false, true,  false),
+  ('SC04', 'Supercharged Smoothies', 'Lean Machine',       '24 oz.', 2.70, 5.99, 35, false, true,  true,  true),
+  ('SC05', 'Supercharged Smoothies', 'Muscle Blaster',     '24 oz.', 2.70, 5.99, 35, false, false, true,  true),
+  ('IS01', 'Indulgent Smoothies',    'Bahama Mama',        '24 oz.', 2.20, 5.49, 60, true,  false, false, false),
+  ('IS02', 'Indulgent Smoothies',    'Peanut Butter Cup',  '24 oz.', 2.20, 5.49, 60, false, false, true,  false),
+  ('IS03', 'Indulgent Smoothies',    'Beach Bum',          '24 oz.', 2.20, 5.49, 60, true,  true,  false, false),
+  ('IS04', 'Indulgent Smoothies',    'Mocha Madness',      '24 oz.', 2.20, 5.49, 60, false, false, true,  true);`
+```
+
 ## Set REPLICA IDENTITY FULL on Each Table
 
 For Debezium (which powers the connector) to capture the full before-image on UPDATE and DELETE events, each table you want to capture must have REPLICA IDENTITY FULL:
-
 
 ```
 ALTER TABLE my_table REPLICA IDENTITY FULL;
